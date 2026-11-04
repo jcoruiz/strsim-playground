@@ -22,6 +22,10 @@ cd wasm && go vet ./... && go test -race ./...
 
 CI also runs the Go tests under `GOOS=js GOARCH=wasm` against each pinned release.
 
+## Deploying
+
+Amplify does not build from the repo: `scripts/deploy.sh` publishes a local build of `main` (see the README). Deploy only when asked, after the change is merged and CI is green.
+
 # Git conventions
 
 All git text is written in **English**: commit messages, PR titles and descriptions, branch names.

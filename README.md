@@ -1,6 +1,6 @@
 # strsim Playground
 
-Try [strsim](https://github.com/jcoruiz/strsim), a string similarity library for Go, in your browser.
+Try [strsim](https://github.com/jcoruiz/strsim), a string similarity library for Go, in your browser: **https://strsim.than.cl**
 
 The library is compiled to WebAssembly and runs in a Web Worker on your machine. There is no backend: the text you type never leaves the page.
 
@@ -66,7 +66,11 @@ To add a strsim release, run `scripts/add-version.sh vX.Y.Z`. It pins the releas
 
 ## Deployment
 
-AWS Amplify Hosting builds `main` on every push with `amplify.yml`: Go 1.27 for the WASM, Node 22 for Vite. `customHttp.yml` sets the security headers and long caching for hashed assets.
+The site is a manual deployment on AWS Amplify Hosting: `scripts/deploy.sh` builds `dist/` from a clean working tree and publishes it, with the security headers and the long caching for hashed assets from `customHttp.yml`. Run it from `main` after merging, with AWS credentials for the account that owns the app:
+
+```bash
+AWS_PROFILE=personal scripts/deploy.sh
+```
 
 ## License
 
