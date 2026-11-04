@@ -206,7 +206,7 @@ function ngramWhy(id: MetricId, x: MetricExplanation): Html {
   const na = t.gramsA.size;
   const nb = t.gramsB.size;
   const formulas: Record<string, Html> = {
-    cosine: html`Cosine = Σ countA × countB ÷ (‖A‖ × ‖B‖) = ${t.dot} ÷ (√${t.normA} × √${t.normB}) = <b>${score(t.cosine)}</b>`,
+    cosine: html`Cosine = Σ countA × countB ÷ (‖A‖ × ‖B‖) = ${t.dot} ÷ (√${t.normA} × √${t.normB}) = <b>${score(t.cosine)}</b>${t.dot * t.dot === t.normA * t.normB ? ' (proportional counts: exactly 1)' : ''}`,
     jaccard: html`Jaccard = shared ÷ (|A| + |B| − shared) = ${s} ÷ (${na} + ${nb} − ${s}) = <b>${score(t.jaccard)}</b>`,
     dice: html`Dice = 2 × shared ÷ (|A| + |B|) = 2 × ${s} ÷ (${na} + ${nb}) = <b>${score(t.dice)}</b>`,
     overlap: html`Overlap = shared ÷ min(|A|, |B|) = ${s} ÷ min(${na}, ${nb}) = <b>${score(t.overlap)}</b>`,

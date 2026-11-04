@@ -2,4 +2,4 @@ module github.com/jcoruiz/strsim-playground/wasm
 
 go 1.22
 
-require github.com/jcoruiz/strsim v0.2.0
+require github.com/jcoruiz/strsim v0.2.1
