@@ -634,7 +634,7 @@ function renderCalibrateErrors(total: number): void {
   mount($('c-errors'), notes.length ? html`<ul class="errors">${notes}</ul>` : html``);
 }
 
-const pct = (n: number) => (Number.isNaN(n) ? '—' : `${(n * 100).toFixed(0)}%`);
+const pct = (n: number) => (Number.isNaN(n) ? 'n/a' : `${(n * 100).toFixed(0)}%`);
 
 function currentThreshold(row: CalibrationRow): number {
   const c = state.calibrate;

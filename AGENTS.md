@@ -30,12 +30,12 @@ Amplify does not build from the repo: `scripts/deploy.sh` publishes a local buil
 
 All git text is written in **English**: commit messages, PR titles and descriptions, branch names.
 
-## Commits — Conventional Commits
+## Commits: Conventional Commits
 
 Format: `<type>(<scope>): <subject>`
 
 - **type** (required): `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`, `chore`, `revert`.
-- **scope** (optional): the area touched, lowercase — e.g. `bridge`, `reference`, `explain`, `compare`, `search`, `calibrate`, `codegen`, `share`, `versions`, `deploy`.
+- **scope** (optional): the area touched, in lowercase, such as `bridge`, `reference`, `explain`, `compare`, `search`, `calibrate`, `codegen`, `share`, `versions`, `deploy`.
 - **subject**: imperative mood, lowercase start, no trailing period, ≤ 72 chars for the whole header.
 - **body** (optional): blank line after the header, then 1–3 short lines or bullets explaining *what/why*. No multi-paragraph prose.
 - **Breaking changes**: `feat(scope)!: ...` plus a `BREAKING CHANGE: ...` footer.
@@ -59,4 +59,4 @@ test(codegen): run the generated programs against every release
 
 ## Branches
 
-`<type>/<short-kebab-description>` — e.g. `feat/ngram-explanation`, `fix/share-link-limits`.
+`<type>/<short-kebab-description>`, such as `feat/ngram-explanation`, `fix/share-link-limits`.
