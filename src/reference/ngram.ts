@@ -32,6 +32,13 @@ export function grams(s: string, n: number): Map<string, number> {
   return out;
 }
 
+/**
+ * Whether the count vectors are proportional (dot² = |A|²·|B|²), checked
+ * exactly: their cosine is 1, which the division can round to
+ * 0.9999999999999998. strsim returns exactly 1 since v0.2.1.
+ */
+const proportional = (dot: number, normA: number, normB: number) => BigInt(dot) * BigInt(dot) === BigInt(normA) * BigInt(normB);
+
 export function ngram(a: string, b: string, size: number): NgramTrace {
   const n = size <= 0 ? 2 : size;
   if (a === '' || b === '') {
@@ -72,7 +79,7 @@ export function ngram(a: string, b: string, size: number): NgramTrace {
     dot,
     normA,
     normB,
-    cosine: Math.min(dot / (Math.sqrt(normA) * Math.sqrt(normB)), 1),
+    cosine: proportional(dot, normA, normB) ? 1 : Math.min(dot / (Math.sqrt(normA) * Math.sqrt(normB)), 1),
     jaccard: inter / (gramsA.size + gramsB.size - inter),
     dice: (2 * inter) / (gramsA.size + gramsB.size),
     overlap: inter / Math.min(gramsA.size, gramsB.size),

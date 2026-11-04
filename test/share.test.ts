@@ -12,7 +12,11 @@ describe('versions', () => {
   });
 
   it('really differ where the changelog says', async () => {
-    const [v1, v2] = await Promise.all([loadWasm('v0.1.0'), loadWasm('v0.2.0')]);
+    const [v1, v2, v21] = await Promise.all([loadWasm('v0.1.0'), loadWasm('v0.2.0'), loadWasm('v0.2.1')]);
+    expect(v21.info.strsim).toBe('v0.2.1');
+    // v0.2.1: Cosine of a string with itself is exactly 1.
+    const cosine = (w: typeof v1) => w.run({ op: 'compare', a: 'martha', b: 'martha', options: DEFAULT_OPTIONS }).scores!.find((s) => s.metric === 'cosine')!.similarity;
+    expect([cosine(v2), cosine(v21)]).toEqual([0.9999999999999998, 1]);
     expect(v1.info.strsim).toBe('v0.1.0');
     expect(v2.info.strsim).toBe('v0.2.0');
     const compare = (a: string, b: string, options = DEFAULT_OPTIONS) => [v1, v2].map((w) => w.run({ op: 'compare', a, b, options }));
