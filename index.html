@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>strsim Playground · string similarity in your browser</title>
+    <meta
+      name="description"
+      content="Try strsim, the Go string similarity library, live in your browser through WebAssembly. Compare 15 metrics and phonetic encoders, see why each one scores what it does, rank a list and find the threshold for your data."
+    />
+    <meta property="og:title" content="strsim Playground" />
+    <meta property="og:description" content="String similarity in Go, running in your browser through WebAssembly." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#121211" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="/" aria-label="strsim Playground home">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+          <rect x="2" y="6" width="28" height="8" rx="3" fill="#2a78d6" />
+          <rect x="2" y="18" width="28" height="8" rx="3" fill="#86b6ef" />
+          <path d="M9 14v4M16 14v4M23 14v4" stroke="#121211" stroke-width="2" />
+        </svg>
+        <span class="brand-name">strsim</span>
+        <span class="brand-sub">Playground</span>
+      </a>
+      <p class="tagline">String similarity in Go, compiled to WebAssembly and running in your browser. Your text never leaves this page.</p>
+      <nav class="links" aria-label="Project links">
+        <a href="https://github.com/jcoruiz/strsim" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://pkg.go.dev/github.com/jcoruiz/strsim" target="_blank" rel="noopener">Docs</a>
+        <a href="https://github.com/jcoruiz/strsim-examples" target="_blank" rel="noopener">Examples</a>
+        <a href="https://github.com/jcoruiz/strsim-benchmark" target="_blank" rel="noopener">Benchmark</a>
+      </nav>
+    </header>
+
+    <div class="banner" id="banner" role="alert" hidden></div>
+
+    <div class="toolbar">
+      <nav class="views" role="tablist" aria-label="Views">
+        <button type="button" role="tab" data-view="compare" aria-selected="true"><span class="long">Compare two strings</span><span class="short">Compare</span></button>
+        <button type="button" role="tab" data-view="search" aria-selected="false"><span class="long">Search a list</span><span class="short">Search</span></button>
+        <button type="button" role="tab" data-view="calibrate" aria-selected="false"><span class="long">Find a threshold</span><span class="short">Threshold</span></button>
+      </nav>
+      <div class="bar-tools">
+        <label class="field inline" title="The strsim release that runs">
+          <span>strsim</span>
+          <select id="version"></select>
+        </label>
+        <button type="button" class="ghost" id="btn-options" aria-expanded="false" aria-controls="options">Options <span id="options-badge"></span></button>
+        <button type="button" class="ghost" id="btn-share">Share link</button>
+      </div>
+    </div>
+
+    <form class="panel options" id="options" hidden>
+      <fieldset>
+        <legend>Input</legend>
+        <label class="check"><input type="checkbox" name="ignoreCase" /> Ignore case <small>(strings.ToLower on both)</small></label>
+      </fieldset>
+      <fieldset>
+        <legend>Levenshtein costs</legend>
+        <label class="field narrow"><span>Insert</span><input type="number" name="insertCost" min="0" max="99" step="1" /></label>
+        <label class="field narrow"><span>Delete</span><input type="number" name="deleteCost" min="0" max="99" step="1" /></label>
+        <label class="field narrow"><span>Substitute</span><input type="number" name="replaceCost" min="0" max="99" step="1" /></label>
+      </fieldset>
+      <fieldset>
+        <legend>Jaro-Winkler</legend>
+        <label class="field narrow"><span>Boost threshold</span><input type="number" name="boostThreshold" min="0" max="1" step="0.05" /></label>
+        <label class="field narrow"><span>Prefix size</span><input type="number" name="prefixSize" min="0" max="20" step="1" /></label>
+      </fieldset>
+      <fieldset>
+        <legend>N-grams</legend>
+        <label class="field narrow"><span>Size</span><input type="number" name="ngramSize" min="1" max="10" step="1" /></label>
+      </fieldset>
+      <fieldset>
+        <legend>Code length</legend>
+        <label class="field narrow"><span>Soundex</span><input type="number" name="soundexLength" min="1" max="20" step="1" /></label>
+        <label class="field narrow"><span>Metaphone</span><input type="number" name="metaphoneLength" min="1" max="20" step="1" /></label>
+        <label class="field narrow"><span>Double Metaphone</span><input type="number" name="doubleMetaphoneLength" min="1" max="20" step="1" /></label>
+        <label class="field narrow" title="0 means unlimited"><span>NYSIIS (0 = no limit)</span><input type="number" name="nysiisLength" min="0" max="20" step="1" /></label>
+      </fieldset>
+      <button type="button" class="ghost small" id="options-reset">Reset to the constructors' defaults</button>
+    </form>
+
+    <main>
+      <section class="view" id="view-compare" aria-label="Compare two strings">
+        <div class="panel pair">
+          <label class="field grow"><span>A</span><input id="cmp-a" type="text" spellcheck="false" autocomplete="off" maxlength="1000" /></label>
+          <button type="button" class="icon" id="cmp-swap" title="Swap A and B" aria-label="Swap A and B">⇄</button>
+          <label class="field grow"><span>B</span><input id="cmp-b" type="text" spellcheck="false" autocomplete="off" maxlength="1000" /></label>
+        </div>
+        <div class="examples" id="cmp-examples" aria-label="Examples"></div>
+        <div class="columns">
+          <div class="panel" id="cmp-scores"></div>
+          <div class="panel detail">
+            <nav class="tabs" role="tablist" data-tabs="compare">
+              <button type="button" role="tab" data-tab="why" aria-selected="true">Why</button>
+              <button type="button" role="tab" data-tab="versions" aria-selected="false">Versions</button>
+              <button type="button" role="tab" data-tab="code" aria-selected="false">Go code</button>
+            </nav>
+            <div class="tab-panel" id="cmp-detail" role="tabpanel"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-search" aria-label="Search a list" hidden>
+        <div class="columns">
+          <div class="panel inputs">
+            <label class="field"><span>List</span><select id="s-preset"></select></label>
+            <label class="field"><span>Query</span><input id="s-query" type="text" spellcheck="false" autocomplete="off" /></label>
+            <label class="field"><span>Candidates, one per line <i id="s-count"></i></span><textarea id="s-list" rows="14" spellcheck="false"></textarea></label>
+            <div class="row">
+              <label class="field"><span>Metric</span><select id="s-metric"></select></label>
+              <label class="field"><span>Keep</span>
+                <select id="s-mode">
+                  <option value="top">Top N (FindTopN)</option>
+                  <option value="threshold">Above a threshold (FindAboveThreshold)</option>
+                </select>
+              </label>
+            </div>
+            <div class="row">
+              <label class="field narrow" data-show="top"><span>N</span><input id="s-topn" type="number" min="1" max="5000" step="1" /></label>
+              <label class="field grow" data-show="threshold"><span>Threshold <output id="s-threshold-out"></output></span><input id="s-threshold" type="range" min="0" max="1" step="0.01" /></label>
+            </div>
+            <p class="hint" id="s-warn"></p>
+          </div>
+          <div class="panel detail">
+            <nav class="tabs" role="tablist" data-tabs="search">
+              <button type="button" role="tab" data-tab="results" aria-selected="true">Results</button>
+              <button type="button" role="tab" data-tab="all" aria-selected="false">All metrics</button>
+              <button type="button" role="tab" data-tab="versions" aria-selected="false">Versions</button>
+              <button type="button" role="tab" data-tab="code" aria-selected="false">Go code</button>
+            </nav>
+            <div class="tab-panel" id="s-detail" role="tabpanel"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-calibrate" aria-label="Find a threshold" hidden>
+        <div class="columns">
+          <div class="panel inputs">
+            <label class="field"><span>Example data</span><select id="c-preset"></select></label>
+            <p class="about">Paste pairs labeled as the same thing or not, one per line: <code>a, b, yes</code> or <code>a, b, no</code>. Use tabs or <code>|</code> to separate when the values contain commas. For each metric the page finds the threshold that separates them best.</p>
+            <label class="field"><span>Labeled pairs <i id="c-count"></i></span><textarea id="c-text" rows="20" spellcheck="false"></textarea></label>
+            <div id="c-errors"></div>
+          </div>
+          <div class="panel detail">
+            <nav class="tabs" role="tablist" data-tabs="calibrate">
+              <button type="button" role="tab" data-tab="ranking" aria-selected="true">Best metric</button>
+              <button type="button" role="tab" data-tab="code" aria-selected="false">Go code</button>
+            </nav>
+            <div class="tab-panel" id="c-detail" role="tabpanel"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <footer class="foot" id="footer"></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
